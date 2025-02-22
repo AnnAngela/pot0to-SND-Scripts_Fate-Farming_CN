@@ -2,12 +2,14 @@
 
 ********************************************************************************
 *                                Fate Farming                                  *
-*                               Version 2.21.4                                 *
+*                               Version 2.21.6                                 *
 ********************************************************************************
 
 Created by: pot0to (https://ko-fi.com/pot0to)
 State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/FateFarmingStateMachine.drawio.png
-        
+
+    -> 2.21.6   Fixed the part where you walk back to center after FATE is done
+    -> 2.21.5   Removed jumps
     -> 2.21.4   Fix for change instances companion script
                 Adjusted landing logic so hopefully it shouldn't get stuck too
                     high up anymore
@@ -28,7 +30,7 @@ State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/Fa
                     - added check to prevent vnav from interrupting casters
                     - turned off vnav pathing for boss fates while in combat
 
-原始地址：https://github.com/pot0to/pot0to-SND-Scripts/blob/057839bcde4fc53e4a35ea527bf53d27d7f456e1/Fate%20Farming/Fate%20Farming.lua#L101
+原始地址：https://github.com/pot0to/pot0to-SND-Scripts/blob/d3121696c6d5f8ddf463a7e18fd368643d6b47c3/Fate%20Farming/Fate%20Farming.lua
 已针对国服进行汉化（核心功能完全可用，6.0 / 7.0 地图完全支持，2.0 - 5.0 地图基本可用，可选功能未验证）
 
 ********************************************************************************
@@ -48,7 +50,7 @@ State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/Fa
     -> 至少一个自动走位插件: 
         -> BossMod Reborn: https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json
         -> Veyn's BossMod: https://puni.sh/api/repository/veyn
-    -> TextAdvance: (用于与 fate 的 NPC交互)
+    -> TextAdvance: (用于与 fate 的 NPC交互) https://github.com/NightmareXIV/MyDalamudPlugins/raw/main/pluginmaster.json
     -> Teleporter :  (用于传送至以太之光 [teleport][Exchange][Retainers])
     -> Lifestream :  (用于换线 [ChangeInstance][Exchange]) https://raw.githubusercontent.com/NightmareXIV/MyDalamudPlugins/main/pluginmaster.json
 
@@ -1752,13 +1754,6 @@ function Mount()
     if GetCharacterCondition(CharacterCondition.flying) then
         State = CharacterState.moveToFate
         LogInfo("[FATE] State Change: MoveToFate")
-    elseif GetCharacterCondition(CharacterCondition.mounted) then
-        if not SelectedZone.flying then
-            State = CharacterState.moveToFate
-            LogInfo("[FATE] State Change: MoveToFate")
-        else
-            yield("/gaction 跳跃")
-        end
     else
         if MountToUse == "随机坐骑" then
             yield('/gaction 随机坐骑')
@@ -2034,7 +2029,7 @@ function CollectionsFateTurnIn()
         yield("/wait 1")
 
         -- if too far from npc to target, then head towards center of fate
-        if (not HasTarget() or GetTargetName()~=CurrentFate.npcName) then
+        if (not HasTarget() or GetTargetName()~=CurrentFate.npcName and GetFateProgress(CurrentFate.fateId) < 100) then
             if not PathfindInProgress() and not PathIsRunning() then
                 PathfindAndMoveTo(CurrentFate.x, CurrentFate.y, CurrentFate.z)
             end
@@ -2337,14 +2332,11 @@ function HandleUnexpectedCombat()
         return
     end
 
-    if GetCharacterCondition(CharacterCondition.flying) then
+    if GetCharacterCondition(CharacterCondition.mounted) then
         if not (PathfindInProgress() or PathIsRunning()) then
             PathfindAndMoveTo(GetPlayerRawXPos(), GetPlayerRawYPos() + 10, GetPlayerRawZPos(), true)
         end
         yield("/wait 10")
-        return
-    elseif GetCharacterCondition(CharacterCondition.mounted) then
-        yield("/gaction 跳跃")
         return
     end
 
