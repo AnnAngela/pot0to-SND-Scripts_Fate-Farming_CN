@@ -2,12 +2,15 @@
 
 ********************************************************************************
 *                                Fate Farming                                  *
-*                               Version 2.21.6                                 *
+*                               Version 2.21.8                                 *
 ********************************************************************************
 
 Created by: pot0to (https://ko-fi.com/pot0to)
 State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/FateFarmingStateMachine.drawio.png
 
+    -> 2.21.8   Added logic to change back to original class upon natural ending
+                    of script for companion mode
+                Fixed typo with "PercentageToHoldBuff"
     -> 2.21.6   Fixed the part where you walk back to center after FATE is done
     -> 2.21.5   Removed jumps
     -> 2.21.4   Fix for change instances companion script
@@ -105,7 +108,7 @@ RotationPlugin                      = "None"        -- 自动输出插件（None
     RotationSingleTargetPreset      = ""            -- 单体输出模式的预设的名称（用于迷失者、迷失少女）
     RotationAoePreset               = ""            -- AOE 模式的预设的名称
     RotationHoldBuffPreset          = ""            -- 留爆发模式的预设的名称
-    PorcentageToHoldBuff            = 65            -- 当 fate 的进度不小于此百分比数值时，切换为留爆发模式，有助于减少爆发技能的浪费。如果打得太快，该值不小于 70% 时仍然有可能导致爆发溢出
+    PercentageToHoldBuff            = 65            -- 当 fate 的进度不小于此百分比数值时，切换为留爆发模式，有助于减少爆发技能的浪费。如果打得太快，该值不小于 70% 时仍然有可能导致爆发溢出
 DodgingPlugin                       = "BMR"         -- 自动走位插件: BMR/VBM/None. 如果你使用 BMR/VBM 作为自动输出插件，该值将被忽略
 
 IgnoreForlorns                      = false         -- 设为 true 将不打迷失者、迷失少女
@@ -2529,7 +2532,7 @@ function DoFate()
     end
         
     --hold buff thingy
-    if GetFateProgress(CurrentFate.fateId) >= PorcentageToHoldBuff then 
+    if GetFateProgress(CurrentFate.fateId) >= PercentageToHoldBuff then 
         TurnOffRaidBuffs()
     end   
 end
@@ -3107,4 +3110,7 @@ while not StopScript do
 end
 yield("/vnav stop")
 
+if GetClassJobId() ~= MainClass.classId then
+    yield("/gs change "..MainClass.className)
+end
 --#endregion Main
