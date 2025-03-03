@@ -290,7 +290,7 @@ BicolorExchangeData =
         },
         shopItems =
         {
-            { itemName = "图拉尔双色宝石的收据", itemIndex = 5, price = 100 },
+            { itemName = "图拉尔双色宝石的收据", itemIndex = 6, price = 100 },
         }
     }
 }
