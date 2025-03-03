@@ -1754,6 +1754,13 @@ function Mount()
     if GetCharacterCondition(CharacterCondition.flying) then
         State = CharacterState.moveToFate
         LogInfo("[FATE] State Change: MoveToFate")
+    elseif GetCharacterCondition(CharacterCondition.mounted) then
+        if not SelectedZone.flying then
+            State = CharacterState.moveToFate
+            LogInfo("[FATE] State Change: MoveToFate")
+        else
+            yield("/gaction 跳跃")
+        end
     else
         if MountToUse == "随机坐骑" then
             yield('/gaction 随机坐骑')
