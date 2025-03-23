@@ -2,37 +2,61 @@
 
 ********************************************************************************
 *                                Fate Farming                                  *
-*                               Version 2.21.8                                 *
+*                               Version 2.21.10                                 *
 ********************************************************************************
 
 Created by: pot0to (https://ko-fi.com/pot0to)
 State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/FateFarmingStateMachine.drawio.png
 
-    -> 2.21.8   Added logic to change back to original class upon natural ending
-                    of script for companion mode
-                Fixed typo with "PercentageToHoldBuff"
-    -> 2.21.6   Fixed the part where you walk back to center after FATE is done
-    -> 2.21.5   Removed jumps
-    -> 2.21.4   Fix for change instances companion script
-                Adjusted landing logic so hopefully it shouldn't get stuck too
-                    high up anymore
-                Added ability to only do bonus fates
-                Adjusted coordinates for Old Sharlayan bicolor gemstone vendor
-                Support for multi-zone farming
-                Added some thanalan npc fates
-                Cleanup for Yak'tel fates and landing condition when flying back
-                    to aetheryte
-                Added height limit check for flying  back to aetheryte
-                Rework bicolor exchange
-                Added checks and debugs for bicolor gemstone shopkeeper
-                Fixed flying ban in Outer La Noscea and Southern Thanalan
-                Added feature to walk towards center of fate if you are too far
-                    away to target the collections fate npc
-                Added anti-botting changes:
-                    - /slightly/ smoother dismount (not by much tbh)
-                    - added check to prevent vnav from interrupting casters
-                    - turned off vnav pathing for boss fates while in combat
-
+    -> 2.21.10  Fix call to vbmai preset
+    -> 2.21.9   By Allison
+                添加了一项优先检查距离FATE的功能，考虑到传送后实际距离可能更短。
+                新增了FatePriority设置。默认行为与之前相同，但会增加上面的新检查，
+                    顺序为：进度 -> 奖励 -> 剩余时间 -> 距离。
+                新增了一个设置，用于判断当没有FATE时是否应在以太之光处等待。
+                    如果禁用，则在FATE结束的位置等待。
+                将WaitUpTo的名称修改为与MinWait一致。
+                新增了一项检查，如果使用RSR作为输出插件，则禁用VBM的选定目标功能。
+                对选择下一个FATE后的等待时间做了小的调整，从而使接近时离FATE中心更远。
+                在移动中增加了额外检查以防止取消施法。
+                在被推出FATE时可能出现的问题也做了修正。
+                修正了“should it to Turn”拼写错误，改为“should it do Turn”。
+            
+    -> 2.21.8   添加了在伴随模式下脚本自然结束时自动切回原始职业的逻辑。
+                修正了“PorcentageToHoldBuff”拼写错误。
+                修正了FATE完成后返回中心位置这一部分的逻辑。
+                移除了跳跃动作。
+                修正了伴随模式下换分线的逻辑。
+                调整了着陆逻辑，希望能够防止在空中卡得太高。
+                新增了只执行奖励FATE的功能。
+                调整了旧萨雷安双色宝石商人的坐标。
+                增加了对多区域农FATE的支持。
+                增加了一些萨纳兰NPC FATE。
+                清理了Yak'tel FATE逻辑，并调整了飞回以太之光时的着陆条件。
+                增加了飞回以太之光时的高度限制检查。
+                重新设计了双色宝石兑换流程。
+                为双色宝石商人新增了检查和调试提示。
+                修复了拉诺西亚外地和南萨纳兰的飞行禁令问题。
+                增加了当你距离收集FATE的NPC太远而无法选择时向FATE中心移动的功能。
+    -> 2.21.6   修复了 FATE 结束后返回中心位置的逻辑问题
+    -> 2.21.5   移除了跳跃动作
+    -> 2.21.4   修复 “切换副本” 时的 "CompanionScriptMode" 脚本问题
+                调整降落逻辑，以避免卡在过高的位置
+                新增 “仅执行奖励 FATE” 功能
+                调整旧萨雷安（Old Sharlayan）双色宝石商人坐标
+                支持多个区域的 FATE 刷怪
+                增加部分萨纳兰（Thanalan）区域的 NPC FATE
+                清理 "Yak'tel FATE" 逻辑，并优化飞行返回以太之光时的降落条件
+                新增飞行返回以太之光时的高度限制检查
+                重新设计双色宝石兑换逻辑
+                为双色宝石商人新增检测与调试功能
+                修复拉诺西亚外地（Outer La Noscea）和南萨纳兰（Southern Thanalan）的飞行禁令问题
+                新增功能：在收集类 FATE 目标 NPC 过远时，自动朝中心移动
+                增加反外挂优化：
+                    - 更平滑的下坐骑动作（虽然变化不大）
+                    - 新增检查，防止 Vnav 在施法时被打断
+                    - 在 Boss 级 FATE 战斗中，禁用 Vnav 导航路径
+                    
 原始地址：https://github.com/pot0to/pot0to-SND-Scripts/blob/d3121696c6d5f8ddf463a7e18fd368643d6b47c3/Fate%20Farming/Fate%20Farming.lua
 已针对国服进行汉化（核心功能完全可用，6.0 / 7.0 地图完全支持，2.0 - 5.0 地图基本可用，可选功能未验证）
 
@@ -42,7 +66,7 @@ State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/Fa
 
 运行所需的插件：
 
-    -> Something Need Doing [Expanded Edition] : (主插件)   https://puni.sh/api/repository/croizat
+    -> Something Need Doing [Expanded Edition] : （实现所有功能所必需的主插件）   https://puni.sh/api/repository/croizat
     -> VNavmesh :   (用于自动飞 fate)    https://puni.sh/api/repository/veyn
     -> 至少一个自动输出插件:
         -> RotationSolver Reborn: https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json       
@@ -83,11 +107,12 @@ Food                                = ""            -- 如果您不想使用任�
 Potion                              = ""            -- 如果您不想使用任何药水，请将 "" 留空。
 ShouldSummonChocobo                 = true          -- 设置为 true 将会自动召唤陆行鸟
     ResummonChocoboTimeLeft         = 3 * 60        -- 如果计时器剩余的时间少于这个数值（单位：秒），则重新召唤陆行鸟，这样它就不会在命运中途消失。
-    ChocoboStance                   = "治疗战术"     --选择一项填入: 跟随/自由战术/防护战术/进攻战术/治疗战术
-    ShouldAutoBuyGysahlGreens       = false         -- 如果背包里没有基萨尔野菜，会自动去海都商人那里购买 99 个
-MountToUse                          = "天阳马阿斯特洛珀"       -- 填入坐骑，脚本会使用该坐骑来飞往fate，需要完整、准确的名称
+    ChocoboStance                   = "治疗战术"     -- 选择一项填入: 跟随/自由战术/防护战术/进攻战术/治疗战术，推荐自由战术（防止未加点导致切换战术失败）
+    ShouldAutoBuyGysahlGreens       = true          -- 如果背包里没有基萨尔野菜，会自动去海都商人那里购买 99 个
+MountToUse                          = "随机坐骑"     -- 填入坐骑，脚本会使用该坐骑来飞往fate，需要完整、准确的名称
                                                                  -- 如果值为 "随机坐骑"，则会使用游戏内的随机坐骑功能
-
+FatePriority                        = {"DistanceTeleport", "Progress", "DistanceTeleport", "Bonus", "TimeLeft", "Distance"}
+                                                    -- Fate优先级设置，"Progress"-进度，"Bonus"-奖励，"TimeLeft"-剩余时间，"Distance"-距离，"DistanceTeleport"-传送距离
 --Fate 战斗设置
 CompletionToIgnoreFate              = 80            -- 如果 fate 的进度不小于这个百分比，就跳过它
 MinTimeLeftToIgnoreFate             = 3*60          -- 如果 fate 的剩余时间不小于这个数值（单位：秒），就跳过它
@@ -98,13 +123,13 @@ CompletionToJoinBossFate            = 0             -- 如果 boss 型 fate 的�
 JoinCollectionsFates                = true          -- 设为 false 则跳过收集型 fate，
 BonusFatesOnly                      = false         -- 设为 true 将只参加有额外奖励的 fate
 MeleeDist                           = 2.5           -- 近战职业攻击距离（用于自动走位插件），建议设为 2.5，若不小于 2.59 将会导致近战职业“无法发动自动攻击，目标在范围之外。”
-RangedDist                          = 8             -- 远程职业攻击距离（用于自动走位插件），建议不大于 25.49
+RangedDist                          = 8             -- 远程职业攻击距离（用于自动走位插件），推荐8/20，建议不大于 25.49
                                                        -- 特别地，如果你的职业有【以自身为圆心的圆形 aoe】（如诗人等），建议不大于【你的这类技能的攻击距离】
 RotationPlugin                      = "None"        -- 自动输出插件（None 代表不由脚本控制的自动输出插件，比如 AE 等）: RSR/BMR/VBM/Wrath/None
-    -- 仅 Rotation Solver Reborn (RSR)
     RSRAoeType                      = "Full"        -- 可选项: Cleave/Full/Off
+                                                        -- 仅 Rotation Solver Reborn (RSR)
 
-    -- 仅 Boss Mod (VBM) / Boss Mod Reborn (BMR)
+    -- 支持 BMR/VBM/Wrath
     RotationSingleTargetPreset      = ""            -- 单体输出模式的预设的名称（用于迷失者、迷失少女）
     RotationAoePreset               = ""            -- AOE 模式的预设的名称
     RotationHoldBuffPreset          = ""            -- 留爆发模式的预设的名称
@@ -114,19 +139,21 @@ DodgingPlugin                       = "BMR"         -- 自动走位插件: BMR/V
 IgnoreForlorns                      = false         -- 设为 true 将不打迷失者、迷失少女
     IgnoreBigForlornOnly            = false         -- 设为 true 将不打迷失者
 
---打完 fate
-WaitUpTo                            = 10            -- 出发前往下一个 fate 前等待时间的最大值（单位：秒）
-                                                        -- 实际值为 3 秒和该值之间的随机秒数
+--FATE 结束后的设置
+MinWait                             = 3             -- 在前往下一个 FATE 之前等待的最小秒数。
+MaxWait                             = 10            -- 在前往下一个 FATE 之前等待的最大秒数。
+                                                        -- 实际等待时间将在 MinWait 和 MaxWait 之间随机生成。
+DownTimeWaitAtNearestAetheryte      = false         -- 当等待 FATE 刷新时，是否应该飞到最近的以太之光并在那里等待？
 EnableChangeInstance                = true          -- 设为 true 如果当前分线没有 fate，则切换分线（仅在有分线的地图可用）
     WaitIfBonusBuff                 = true          -- 设为 true 将在拥有“危命奖励提高” buff 时不换线
     NumberOfInstances               = 3             -- 最大分线数
 ShouldExchangeBicolorGemstones      = false         -- 设为 true 则在双色宝石即将溢出时兑换双色宝石的收据
-    ItemToPurchase                  = "图拉尔双色宝石的收据"        -- 可选项：双色宝石的收据/图拉尔双色宝石的收据
-SelfRepair                          = true          -- 设为 true 将在装备即将损坏时自己修复，否则将会回到海都找维修工修复
+    ItemToPurchase                  = "图拉尔双色宝石的收据"        -- 可选项：双色宝石的收据/图拉尔双色宝石的收据/犎牛肩肉
+SelfRepair                          = false         -- 设为 true 将在装备即将损坏时自己修复，否则将会回到海都找维修工修复
     RepairAmount                    = 20            -- 当装备耐久度平均值低于此值时开始修复
-    ShouldAutoBuyDarkMatter         = false         -- 当8级暗物质不足时自动去海都商人那里购买 99 个
-ShouldExtractMateria                = false         -- 是否在装备精炼度满时自动精制魔晶石
-Retainers                           = false         -- 是否自动收雇员
+    ShouldAutoBuyDarkMatter         = true          -- 当8级暗物质不足时自动去海都商人那里购买 99 个
+ShouldExtractMateria                = true          -- 是否在装备精炼度满时自动精制魔晶石
+Retainers                           = true          -- 是否自动收雇员
 ShouldGrandCompanyTurnIn            = false         -- 是否自动交军票 (需要 Deliveroo)
     InventorySlotsLeft              = 5             -- 当背包剩余空间小于此值时开始交军票
 
@@ -145,36 +172,36 @@ CompanionScriptMode                 = false         -- 仅在其他脚本要求�
 --#region Plugin Checks and Setting Init
 
 if not HasPlugin("vnavmesh") then
-    yield("/echo [FATE] Please install vnavmesh")
+    yield("/echo [FATE] 请安装 vnavmesh")
 end
 
 if not HasPlugin("BossMod") and not HasPlugin("BossModReborn") then
-    yield("/echo [FATE] Please install an AI dodging plugin, either Veyn's BossMod or BossMod Reborn")
+    yield("/echo [FATE] 请安装一个AI躲避插件，例如Veyn's BossMod或BossMod Reborn")
 end
 
 if not HasPlugin("TextAdvance") then
-    yield("/echo [FATE] Please install TextAdvance")
+    yield("/echo [FATE] 请安装 TextAdvance")
 end
 
 if EnableChangeInstance == true  then
     if HasPlugin("Lifestream") == false then
-        yield("/echo [FATE] Please install Lifestream or Disable ChangeInstance in the settings")
+        yield("/echo [FATE] 请安装Lifestream或在设置中禁用ChangeInstance")
     end
 end
 if Retainers then
     if not HasPlugin("AutoRetainer") then
-        yield("/echo [FATE] Please install AutoRetainer")
+        yield("/echo [FATE] 请安装 AutoRetainer")
     end
 end
 if ShouldGrandCompanyTurnIn then
     if not HasPlugin("Deliveroo") then
         ShouldGrandCompanyTurnIn = false
-        yield("/echo [FATE] Please install Deliveroo")
+        yield("/echo [FATE] 请安装 Deliveroo")
     end
 end
 if ShouldExtractMateria then
     if HasPlugin("YesAlready") == false then
-        yield("/echo [FATE] Please install YesAlready")
+        yield("/echo [FATE] 请安装 YesAlready")
     end
 end
 if DodgingPlugin == "None" then
@@ -291,6 +318,7 @@ BicolorExchangeData =
         shopItems =
         {
             { itemName = "图拉尔双色宝石的收据", itemIndex = 6, price = 100 },
+            { itemName = "犎牛肩肉", itemIndex = 9, price = 3 }            
         }
     }
 }
@@ -1165,8 +1193,8 @@ FatesData = {
             },
             fatesWithContinuations =
             {
-                { fateName="水城噩梦", continuationIsBoss=ture },
-                { fateName="亩鼠米卡：盛装巡游开始", continuationIsBoss=ture }
+                { fateName="水城噩梦", continuationIsBoss=true },
+                { fateName="亩鼠米卡：盛装巡游开始", continuationIsBoss=true }
             },
             specialFates =
             {
@@ -1268,7 +1296,7 @@ function SelectNextZone()
         end
     end
     if nextZone == nil then
-        yield("/echo [FATE] Current zone is only partially supported. No data on npc fates.")
+        yield("/echo [FATE] 当前区域仅部分支持。没有关于NPC Fate的数据。")
         nextZone = {
             zoneName = "",
             zoneId = nextZoneId,
@@ -1305,9 +1333,11 @@ function SelectNextZone()
 end
 
 --[[
-    Given two fates, picks the better one based on priority progress -> is bonus -> time left -> distance
+    根据 FatePriority 中定义的优先级顺序选择更好的 FATE。
+    默认优先级顺序为 "Progress" -> "DistanceTeleport" -> "Bonus" -> "TimeLeft" -> "Distance"
 ]]
 function SelectNextFateHelper(tempFate, nextFate)
+    -- 检查 WaitForBonusIfBonusBuff 是否为 true，并且是否有任意一个 buff，如果是，则将 BonusFatesOnlyTemp 设置为 true
     if BonusFatesOnly then
         if not tempFate.isBonusFate and nextFate ~= nil and nextFate.isBonusFate then
             return nextFate
@@ -1316,63 +1346,52 @@ function SelectNextFateHelper(tempFate, nextFate)
         elseif not tempFate.isBonusFate and (nextFate == nil or not nextFate.isBonusFate) then
             return nil
         end
-        -- if both are bonus fates, go through the regular fate selection process
+        -- 如果两个都是奖励FATE，则通过常规的FATE选择流程
     end
 
     if tempFate.timeLeft < MinTimeLeftToIgnoreFate or tempFate.progress > CompletionToIgnoreFate then
+        LogInfo("[FATE] Ignoring fate #"..tempFate.fateId.." due to insufficient time or high completion.")
         return nextFate
-    else
-        if nextFate == nil then
-                LogInfo("[FATE] Selecting #"..tempFate.fateId.." because no other options so far.")
-                return tempFate
-        -- elseif nextFate.startTime == 0 and tempFate.startTime > 0 then -- nextFate is an unopened npc fate
-        --     LogInfo("[FATE] Selecting #"..tempFate.fateId.." because other fate #"..nextFate.fateId.." is an unopened npc fate.")
-        --     return tempFate
-        -- elseif tempFate.startTime == 0 and nextFate.startTime > 0 then -- tempFate is an unopened npc fate
-        --     return nextFate
-        elseif nextFate.timeLeft < MinTimeLeftToIgnoreFate or nextFate.progress > CompletionToIgnoreFate then
-            return tempFate
-        else -- select based on progress
-            if tempFate.progress > nextFate.progress then
-                LogInfo("[FATE] Selecting #"..tempFate.fateId.." because other fate #"..nextFate.fateId.." has less progress.")
-                return tempFate
-            elseif tempFate.progress < nextFate.progress then
-                LogInfo("[FATE] Selecting #"..nextFate.fateId.." because other fate #"..tempFate.fateId.." has less progress.")
-                return nextFate
-            else
-                if (nextFate.isBonusFate and tempFate.isBonusFate) or (not nextFate.isBonusFate and not tempFate.isBonusFate) then
-                    if tempFate.timeLeft < nextFate.timeLeft then -- select based on time left
-                        LogInfo("[FATE] Selecting #"..tempFate.fateId.." because other fate #"..nextFate.fateId.." has more time left.")
-                        return tempFate
-                    elseif tempFate.timeLeft > nextFate.timeLeft then
-                        LogInfo("[FATE] Selecting #"..tempFate.fateId.." because other fate #"..nextFate.fateId.." has more time left.")
-                        return nextFate
-                    else
-                        tempFatePlayerDistance = GetDistanceToPoint(tempFate.x, tempFate.y, tempFate.z)
-                        nextFatePlayerDistance = GetDistanceToPoint(nextFate.x, nextFate.y, nextFate.z)
-                        if tempFatePlayerDistance < nextFatePlayerDistance then
-                            LogInfo("[FATE] Selecting #"..tempFate.fateId.." because other fate #"..nextFate.fateId.." is farther.")
-                            return tempFate
-                        elseif tempFatePlayerDistance > nextFatePlayerDistance then
-                            LogInfo("[FATE] Selecting #"..nextFate.fateId.." because other fate #"..nextFate.fateId.." is farther.")
-                            return nextFate
-                        else
-                            if tempFate.fateId < nextFate.fateId then
-                                return tempFate
-                            else
-                                return nextFate
-                            end
-                        end
-                    end
-                elseif nextFate.isBonusFate then
-                    return nextFate
-                elseif tempFate.isBonusFate then
-                    return tempFate
-                end
-            end
+    elseif nextFate == nil then
+        LogInfo("[FATE] Selecting #"..tempFate.fateId.." because no other options so far.")
+        return tempFate
+    elseif nextFate.timeLeft < MinTimeLeftToIgnoreFate or nextFate.progress > CompletionToIgnoreFate then
+        LogInfo("[FATE] Ignoring fate #"..nextFate.fateId.." due to insufficient time or high completion.")
+        return tempFate
+    end
+
+    -- 根据优先级进行评估（遍历列表，返回第一个不相等的优先级）
+    for _, criteria in ipairs(FatePriority) do
+        if criteria == "Progress" then
+            LogInfo("[FATE] Comparing progress: "..tempFate.progress.." vs "..nextFate.progress)
+            if tempFate.progress > nextFate.progress then return tempFate end
+            if tempFate.progress < nextFate.progress then return nextFate end
+        elseif criteria == "Bonus" then
+            LogInfo("[FATE] Checking bonus status: "..tostring(tempFate.isBonusFate).." vs "..tostring(nextFate.isBonusFate))
+            if tempFate.isBonusFate and not nextFate.isBonusFate then return tempFate end
+            if nextFate.isBonusFate and not tempFate.isBonusFate then return nextFate end
+        elseif criteria == "TimeLeft" then
+            LogInfo("[FATE] Comparing time left: "..tempFate.timeLeft.." vs "..nextFate.timeLeft)
+            if tempFate.timeLeft > nextFate.timeLeft then return tempFate end
+            if tempFate.timeLeft < nextFate.timeLeft then return nextFate end
+        elseif criteria == "Distance" then
+            local tempDist = GetDistanceToPoint(tempFate.x, tempFate.y, tempFate.z)
+            local nextDist = GetDistanceToPoint(nextFate.x, nextFate.y, nextFate.z)
+            LogInfo("[FATE] Comparing distance: "..tempDist.." vs "..nextDist)
+            if tempDist < nextDist then return tempFate end
+            if tempDist > nextDist then return nextFate end
+        elseif criteria == "DistanceTeleport" then
+            local tempDist = GetDistanceToPointWithAetheryteTravel(tempFate.x, tempFate.y, tempFate.z)
+            local nextDist = GetDistanceToPointWithAetheryteTravel(nextFate.x, nextFate.y, nextFate.z)
+            LogInfo("[FATE] Comparing distance: "..tempDist.." vs "..nextDist)
+            if tempDist < nextDist then return tempFate end
+            if tempDist > nextDist then return nextFate end
         end
     end
-    return nextFate
+
+    -- Fallback: Select fate with the lower ID
+    LogInfo("[FATE] Selecting lower ID fate: "..tempFate.fateId.." vs "..nextFate.fateId)
+    return (tempFate.fateId < nextFate.fateId) and tempFate or nextFate
 end
 
 function BuildFateTable(fateId)
@@ -1458,14 +1477,14 @@ function SelectNextFate()
     LogInfo("[FATE] Finished considering all fates")
 
     if nextFate == nil then
-        LogInfo("[FATE] No eligible fates found.")
+        LogInfo("[FATE] 没有找到合适的FATE")
         if Echo == "All" then
-            yield("/echo [FATE] No eligible fates found.")
+            yield("/echo [FATE] 没有找到合适的FATE")
         end
     else
         LogInfo("[FATE] Final selected fate #"..nextFate.fateId.." "..nextFate.fateName)
     end
-    yield("/wait 1")
+    yield("/wait 0.211")
 
     return nextFate
 end
@@ -1485,6 +1504,41 @@ end
 --#endregion Fate Functions
 
 --#region Movement Functions
+
+function DistanceFromClosestAetheryteToPoint(x, y, z, teleportTimePenalty)
+    local closestAetheryte = nil
+    local closestTravelDistance = math.maxinteger
+    for _, aetheryte in ipairs(SelectedZone.aetheryteList) do
+        local distanceAetheryteToFate = DistanceBetween(aetheryte.x, y, aetheryte.z, x, y, z)
+        local comparisonDistance = distanceAetheryteToFate + teleportTimePenalty
+        LogInfo("[FATE] Distance via "..aetheryte.aetheryteName.." adjusted for tp penalty is "..tostring(comparisonDistance))
+
+        if comparisonDistance < closestTravelDistance then
+            LogInfo("[FATE] Updating closest aetheryte to "..aetheryte.aetheryteName)
+            closestTravelDistance = comparisonDistance
+            closestAetheryte = aetheryte
+        end
+    end
+
+    return closestTravelDistance
+end
+
+function GetDistanceToPointWithAetheryteTravel(x, y, z)
+    -- Get the direct flight distance (no aetheryte)
+    local directFlightDistance = GetDistanceToPoint(x, y, z)
+    LogInfo("[FATE] Direct flight distance is: " .. directFlightDistance)
+    
+    -- Get the distance to the closest aetheryte, including teleportation penalty
+    local distanceToAetheryte = DistanceFromClosestAetheryteToPoint(x, y, z, 200)
+    LogInfo("[FATE] Distance via closest Aetheryte is: " .. (distanceToAetheryte or "nil"))
+
+    -- Return the minimum distance, either via direct flight or via the closest aetheryte travel
+    if distanceToAetheryte == nil then
+        return directFlightDistance
+    else
+        return math.min(directFlightDistance, distanceToAetheryte)
+    end
+end
 
 function GetClosestAetheryte(x, y, z, teleportTimePenalty)
     local closestAetheryte = nil
@@ -1572,7 +1626,7 @@ function TeleportTo(aetheryteName)
 
     while EorzeaTimeToUnixTime(GetCurrentEorzeaTimestamp()) - LastTeleportTimeStamp < 5 do
         LogInfo("[FATE] Too soon since last teleport. Waiting...")
-        yield("/wait 5")
+        yield("/wait 5.001")
     end
 
     yield("/tp "..aetheryteName)
@@ -1597,7 +1651,7 @@ function ChangeInstance()
             if WaitingForFateRewards == 0 and not shouldWaitForBonusBuff then
                 StopScript = true
             else
-                LogInfo("[自动Fate] 正在等待团辅或Fate结算")
+                LogInfo("[Fate Farming] 正在等待团辅或Fate结算")
                 yield("/wait 3")
             end
         else
@@ -1633,7 +1687,7 @@ function ChangeInstance()
         LogInfo("[FATE] Targeting aetheryte, but greater than 10 distance")
         if GetDistanceToTarget() > 20 and not GetCharacterCondition(CharacterCondition.mounted) then
             State = CharacterState.mounting
-            LogInfo("[FATE] State Change: Mounting")
+            LogInfo("[FATE] 状态变更: Mounting")
         elseif not (PathfindInProgress() or PathIsRunning()) then
             PathfindAndMoveTo(GetTargetRawXPos(), GetTargetRawYPos(), GetTargetRawZPos(), GetCharacterCondition(CharacterCondition.flying) and SelectedZone.flying)
         end
@@ -1648,7 +1702,7 @@ function ChangeInstance()
 
     if GetCharacterCondition(CharacterCondition.mounted) then
         State = CharacterState.changeInstanceDismount
-        LogInfo("[FATE] State Change: ChangeInstanceDismount")
+        LogInfo("[FATE] 状态变更: ChangeInstanceDismount")
         return
     end
 
@@ -1658,7 +1712,7 @@ function ChangeInstance()
     yield("/wait 1") -- wait for instance transfer to register
     State = CharacterState.ready
     SuccessiveInstanceChanges = SuccessiveInstanceChanges + 1
-    LogInfo("[FATE] State Change: Ready")
+    LogInfo("[FATE] 状态变更: Ready")
 end
 
 function WaitForContinuation()
@@ -1668,7 +1722,7 @@ function WaitForContinuation()
         if nextFateId ~= CurrentFate.fateId then
             CurrentFate = BuildFateTable(nextFateId)
             State = CharacterState.doFate
-            LogInfo("[FATE] State Change: DoFate")
+            LogInfo("[FATE] 状态变更: DoFate")
         end
     elseif os.clock() - LastFateEndTime > 30 then
         LogInfo("WaitForContinuation Abort")
@@ -1701,7 +1755,7 @@ function FlyBackToAetheryte()
     if NextFate ~= nil then
         yield("/vnav stop")
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: 就绪")
         return
     end
 
@@ -1709,7 +1763,7 @@ function FlyBackToAetheryte()
     local y = GetPlayerRawYPos()
     local z = GetPlayerRawZPos()
     local closestAetheryte = GetClosestAetheryte(x, y, z, 0)
-    -- if you get any sort of error while flying back, then just abort and tp back
+    -- 如果在飞行回程过程中遇到高度限制错误，则直接传送回最近的以太之光
     if IsAddonVisible("_TextError") and GetNodeText("_TextError", 1) == "抵达高度上限，无法继续提升高度。" then
         yield("/vnav stop")
         TeleportTo(closestAetheryte.aetheryteName)
@@ -1724,10 +1778,10 @@ function FlyBackToAetheryte()
         end
 
         if GetCharacterCondition(CharacterCondition.flying) then
-            yield("/ac 跳下") -- land but don't actually 跳下, to avoid running chocobo timer
+            yield("/ac 跳下")  -- 降落但不是真正下坐骑，以避免触发陆行鸟计时器
         elseif GetCharacterCondition(CharacterCondition.mounted) then
             State = CharacterState.ready
-            LogInfo("[FATE] State Change: Ready")
+            LogInfo("[FATE] 状态变更: Ready")
         else
             if MountToUse == "随机坐骑" then
                 yield('/gaction 随机坐骑')
@@ -1740,12 +1794,12 @@ function FlyBackToAetheryte()
 
     if not GetCharacterCondition(CharacterCondition.mounted) then
         State = CharacterState.mounting
-        LogInfo("[FATE] State Change: Mounting")
+        LogInfo("[FATE] 状态变更: Mounting")
         return
     end
-    
+
     if not (PathfindInProgress() or PathIsRunning()) then
-        LogInfo("[FATE] ClosestAetheryte.y: "..closestAetheryte.y)
+        LogInfo("[FATE] ClosestAetheryte.y: " .. closestAetheryte.y)
         if closestAetheryte ~= nil then
             SetMapFlag(SelectedZone.zoneId, closestAetheryte.x, closestAetheryte.y, closestAetheryte.z)
             PathfindAndMoveTo(closestAetheryte.x, closestAetheryte.y, closestAetheryte.z, GetCharacterCondition(CharacterCondition.flying) and SelectedZone.flying)
@@ -1754,16 +1808,9 @@ function FlyBackToAetheryte()
 end
 
 function Mount()
-    if GetCharacterCondition(CharacterCondition.flying) then
+    if GetCharacterCondition(CharacterCondition.mounted) then
         State = CharacterState.moveToFate
-        LogInfo("[FATE] State Change: MoveToFate")
-    elseif GetCharacterCondition(CharacterCondition.mounted) then
-        if not SelectedZone.flying then
-            State = CharacterState.moveToFate
-            LogInfo("[FATE] State Change: MoveToFate")
-        else
-            yield("/gaction 跳跃")
-        end
+        LogInfo("[FATE] 状态变更: MoveToFate")
     else
         if MountToUse == "随机坐骑" then
             yield('/gaction 随机坐骑')
@@ -1785,7 +1832,7 @@ function Dismount()
             local z = GetPlayerRawZPos()
 
             if GetCharacterCondition(CharacterCondition.flying) and GetDistanceToPoint(LastStuckCheckPosition.x, LastStuckCheckPosition.y, LastStuckCheckPosition.z) < 2 then
-                LogInfo("[FATE] Unable to 跳下 here. Moving to another spot.")
+                LogInfo("[FATE] 无法在此处下坐骑。移动到另一个位置。")
                 local random_x, random_y, random_z = RandomAdjustCoordinates(x, y, z, 10)
                 local nearestPointX = QueryMeshNearestPointX(random_x, random_y, random_z, 100, 100)
                 local nearestPointY = QueryMeshNearestPointY(random_x, random_y, random_z, 100, 100)
@@ -1804,11 +1851,10 @@ function Dismount()
     end
 end
 
-
 function MiddleOfFateDismount()
     if not IsFateActive(CurrentFate.fateId) then
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
         return
     end
 
@@ -1825,7 +1871,7 @@ function MiddleOfFateDismount()
             else
                 yield("/vnav stop")
                 State = CharacterState.doFate
-                LogInfo("[FATE] State Change: DoFate")
+                LogInfo("[FATE] 状态变更: DoFate")
             end
         end
     else
@@ -1838,7 +1884,7 @@ function NPCDismount()
         Dismount()
     else
         State = CharacterState.interactWithNpc
-        LogInfo("[FATE] State Change: InteractWithFateNpc")
+        LogInfo("[FATE] 状态变更: InteractWithFateNpc")
     end
 end
 
@@ -1847,7 +1893,7 @@ function ChangeInstanceDismount()
         Dismount()
     else
         State = CharacterState.changingInstances
-        LogInfo("[FATE] State Change: ChangingInstance")
+        LogInfo("[FATE] 状态变更: ChangingInstance")
     end
 end
 
@@ -1874,7 +1920,7 @@ function MoveToFate()
         LogInfo("[FATE] Next Fate is dead, selecting new Fate.")
         yield("/vnav stop")
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
         return
     end
 
@@ -1882,7 +1928,7 @@ function MoveToFate()
     if NextFate == nil then -- when moving to next fate, CurrentFate == NextFate
         yield("/vnav stop")
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
         return
     elseif CurrentFate == nil or NextFate.fateId ~= CurrentFate.fateId then
         yield("/vnav stop")
@@ -1910,12 +1956,12 @@ function MoveToFate()
             PathfindAndMoveTo(GetTargetRawXPos(), GetTargetRawYPos(), GetTargetRawZPos())
             if (CurrentFate.isOtherNpcFate or CurrentFate.isCollectionsFate) then
                 State = CharacterState.interactWithNpc
-                LogInfo("[FATE] State Change: Interact with npc")
+                LogInfo("[FATE] 状态变更: Interact with npc")
             -- if GetTargetName() == CurrentFate.npcName then
             --     State = CharacterState.interactWithNpc
             -- elseif GetTargetFateID() == CurrentFate.fateId then
             --     State = CharacterState.middleOfFateDismount
-            --     LogInfo("[FATE] State Change: MiddleOfFateDismount")
+            --     LogInfo("[FATE] 状态变更: MiddleOfFateDismount")
             else
                 State = CharacterState.middleOfFateDismount
                 LogInfo("[FATE] 状态变化: MiddleOfFateDismount")
@@ -1927,7 +1973,7 @@ function MoveToFate()
             else
                 TargetClosestFateEnemy()
             end
-            yield("/wait 0.5") -- 等待0.5秒以保证目标选中
+            yield("/wait 0.5") -- give it a moment to make sure the target sticks
 	            return
         end
     end
@@ -1954,10 +2000,10 @@ function MoveToFate()
     end
 
     if not MovingAnnouncementLock then
-        LogInfo("[FATE] Moving to fate #"..CurrentFate.fateId.." "..CurrentFate.fateName)
+        LogInfo("[FATE] 移动到FATE #"..CurrentFate.fateId.." "..CurrentFate.fateName)
         MovingAnnouncementLock = true
         if Echo == "All" then
-            yield("/echo [FATE] Moving to fate #"..CurrentFate.fateId.." "..CurrentFate.fateName)
+            yield("/echo [FATE] 移动到FATE #"..CurrentFate.fateId.." "..CurrentFate.fateName)
         end
     end
 
@@ -1967,7 +2013,7 @@ function MoveToFate()
 
     if not GetCharacterCondition(CharacterCondition.mounted) then
         State = CharacterState.mounting
-        LogInfo("[FATE] State Change: Mounting")
+        LogInfo("[FATE] 状态变更: Mounting")
         return
     end
 
@@ -1987,11 +2033,11 @@ function InteractWithFateNpc()
     if IsInFate() or GetFateStartTimeEpoch(CurrentFate.fateId) > 0 then
         yield("/vnav stop")
         State = CharacterState.doFate
-        LogInfo("[FATE] State Change: DoFate")
+        LogInfo("[FATE] 状态变更: DoFate")
         yield("/wait 1") -- give the fate a second to register before dofate and lsync
     elseif not IsFateActive(CurrentFate.fateId) then
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
     elseif PathfindInProgress() or PathIsRunning() then
         if HasTarget() and GetTargetName() == CurrentFate.npcName and GetDistanceToTarget() < (5*math.random()) then
             yield("/vnav stop")
@@ -2006,7 +2052,7 @@ function InteractWithFateNpc()
 
         if GetCharacterCondition(CharacterCondition.mounted) then
             State = CharacterState.npcDismount
-            LogInfo("[FATE] State Change: NPCDismount")
+            LogInfo("[FATE] 状态变更: NPCDismount")
             return
         end
 
@@ -2029,7 +2075,7 @@ function CollectionsFateTurnIn()
     if CurrentFate ~= nil and not IsFateActive(CurrentFate.fateId) then
         CurrentFate = nil
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
         return
     end
 
@@ -2065,11 +2111,11 @@ function CollectionsFateTurnIn()
         if GetFateProgress(CurrentFate.fateId) < 100 then
             TurnOnCombatMods()
             State = CharacterState.doFate
-            LogInfo("[FATE] State Change: DoFate")
+            LogInfo("[FATE] 状态变更: DoFate")
         else
             if GotCollectionsFullCredit then
                 State = CharacterState.unexpectedCombat
-                LogInfo("[FATE] State Change: UnexpectedCombat")
+                LogInfo("[FATE] 状态变更: UnexpectedCombat")
             end
         end
 
@@ -2123,15 +2169,15 @@ function SummonChocobo()
         if GetItemCount(4868) > 0 then
             yield("/item 基萨尔野菜")
             yield("/wait 3")
-            yield('/cac "'..ChocoboStance..' stance"')
+            yield('/cac "'..ChocoboStance..'"')
         elseif ShouldAutoBuyGysahlGreens then
             State = CharacterState.autoBuyGysahlGreens
-            LogInfo("[FATE] State Change: AutoBuyGysahlGreens")
+            LogInfo("[FATE] 状态变更: AutoBuyGysahlGreens")
             return
         end
     end
     State = CharacterState.ready
-    LogInfo("[FATE] State Change: Ready")
+    LogInfo("[FATE] 状态变更: Ready")
 end
 
 function AutoBuyGysahlGreens()
@@ -2262,8 +2308,10 @@ function TurnOnCombatMods(rotationMode)
                 yield("/rotation auto on")
                 LogInfo("[FATE] TurnOnCombatMods /rotation auto on")
             end
-        elseif RotationPlugin == "BMR" or RotationPlugin == "VBM" then
+        elseif RotationPlugin == "BMR" then
             yield("/bmrai setpresetname "..RotationAoePreset)
+        elseif RotationPlugin == "VBM" then
+            yield("/vbmai setpresetname "..RotationAoePreset)
         elseif RotationPlugin == "Wrath" then
             yield("/wrath auto on")
         end
@@ -2285,6 +2333,9 @@ function TurnOnCombatMods(rotationMode)
                 yield("/vbmai followcombat on")
                 -- yield("/bmrai followoutofcombat on")
                 yield("/vbmai maxdistancetarget " .. MaxDistance)
+                if RotationPlugin ~= "VBM" then
+                    yield("/vbmai ForbidActions on") --This Disables VBM AI Auto-Target
+                end
             end
             AiDodgingOn = true
         end
@@ -2317,6 +2368,9 @@ function TurnOffCombatMods()
                 yield("/vbmai followtarget off")
                 yield("/vbmai followcombat off")
                 yield("/vbmai followoutofcombat off")
+                if RotationPlugin ~= "VBM" then
+                    yield("/vbmai ForbidActions off") --This Enables VBM AI Auto-Target
+                end
             end
             AiDodgingOn = false
         end
@@ -2329,15 +2383,15 @@ function HandleUnexpectedCombat()
     if IsInFate() and GetFateProgress(GetNearestFate()) < 100 then
         CurrentFate = BuildFateTable(GetNearestFate())
         State = CharacterState.doFate
-        LogInfo("[FATE] State Change: DoFate")
+        LogInfo("[FATE] 状态变更: DoFate")
         return
     elseif not GetCharacterCondition(CharacterCondition.inCombat) then
         yield("/vnav stop")
         ClearTarget()
         TurnOffCombatMods()
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
-        local randomWait = (math.floor(math.random()*WaitUpTo * 1000)/1000) + 3 -- truncated to 3 decimal places
+        LogInfo("[FATE] 状态变更: Ready")
+        local randomWait = (math.floor(math.random()*MaxWait * 1000)/1000) + MinWait -- truncated to 3 decimal places
         yield("/wait "..randomWait)
         return
     end
@@ -2400,6 +2454,7 @@ function DoFate()
     then -- got pushed out of fate. go back
         yield("/vnav stop")
         yield("/wait 1")
+        LogInfo("[FATE] pushed out of fate going back!")
         PathfindAndMoveTo(CurrentFate.x, CurrentFate.y, CurrentFate.z, GetCharacterCondition(CharacterCondition.flying) and SelectedZone.flying)
         return
     elseif not IsFateActive(CurrentFate.fateId) or GetFateProgress(CurrentFate.fateId) == 100 then
@@ -2408,28 +2463,28 @@ function DoFate()
         if not LogInfo("[FATE] HasContintuation check") and CurrentFate.hasContinuation then
             LastFateEndTime = os.clock()
             State = CharacterState.waitForContinuation
-            LogInfo("[FATE] State Change: WaitForContinuation")
+            LogInfo("[FATE] 状态变更: WaitForContinuation")
             return
         else
             DidFate = true
             LogInfo("[FATE] No continuation for "..CurrentFate.fateName)
-            local randomWait = (math.floor(math.random() * (math.max(0, WaitUpTo - 3)) * 1000)/1000) + 3 -- truncated to 3 decimal places
+            local randomWait = (math.floor(math.random() * (math.max(0, MaxWait - 3)) * 1000)/1000) + MinWait -- truncated to 3 decimal places
             yield("/wait "..randomWait)
             TurnOffCombatMods()
             State = CharacterState.ready
-            LogInfo("[FATE] State Change: Ready")
+            LogInfo("[FATE] 状态变更: Ready")
         end
         return
     elseif GetCharacterCondition(CharacterCondition.mounted) then
         State = CharacterState.middleOfFateDismount
-        LogInfo("[FATE] State Change: MiddleOfFateDismount")
+        LogInfo("[FATE] 状态变更: MiddleOfFateDismount")
         return
     elseif CurrentFate.isCollectionsFate then
         yield("/wait 1") -- needs a moment after start of fate for GetFateEventItem to populate
         if GetItemCount(GetFateEventItem(CurrentFate.fateId)) >= 7 or (GotCollectionsFullCredit and GetFateProgress(CurrentFate.fateId) == 100) then
             yield("/vnav stop")
             State = CharacterState.collectionsFateTurnIn
-            LogInfo("[FATE] State Change: CollectionsFatesTurnIn")
+            LogInfo("[FATE] 状态变更: CollectionsFatesTurnIn")
         end
     end
 
@@ -2459,9 +2514,9 @@ function DoFate()
             ClearTarget()
         elseif GetTargetHP() > 0 then
             if not ForlornMarked then
-                yield("/enemysign attack1")
+                yield("/marking attack1")
                 if Echo == "All" then
-                    yield("/echo Found Forlorn! <se.3>")
+                    yield("/echo 发现迷失者! <se.3>")
                 end
                 TurnOffAoes()
                 ForlornMarked = true
@@ -2496,14 +2551,14 @@ function DoFate()
             if GetDistanceToTarget() <= (MaxDistance + GetTargetHitboxRadius()) then
                 if PathfindInProgress() or PathIsRunning() then
                     yield("/vnav stop")
-                    yield("/wait 5") -- wait 5s before inching any closer
-                elseif GetDistanceToTarget() > (1 + GetTargetHitboxRadius()) then -- never move into hitbox
+                    yield("/wait 5.002") -- wait 5s before inching any closer
+                elseif (GetDistanceToTarget() > (1 + GetTargetHitboxRadius())) and not GetCharacterCondition(CharacterCondition.casting) then -- never move into hitbox
                     PathfindAndMoveTo(x, y, z)
                     yield("/wait 1") -- inch closer by 1s
                 end
             elseif not (PathfindInProgress() or PathIsRunning()) then
-                yield("/wait 5") -- give 5s for casts to go off before attempting to move closer
-                if x ~= 0 and z~=0 and not GetCharacterCondition(CharacterCondition.inCombat) then
+                yield("/wait 5.003") -- give 5s for enemy AoE casts to go off before attempting to move closer
+                if (x ~= 0 and z~=0 and not GetCharacterCondition(CharacterCondition.inCombat)) and not GetCharacterCondition(CharacterCondition.casting) then
                     PathfindAndMoveTo(x, y, z)
                 end
             end
@@ -2511,7 +2566,7 @@ function DoFate()
         else
             TargetClosestFateEnemy()
             yield("/wait 1") -- wait in case target doesn't stick
-            if not HasTarget() then
+            if (not HasTarget()) and not GetCharacterCondition(CharacterCondition.casting) then
                 PathfindAndMoveTo(CurrentFate.x, CurrentFate.y, CurrentFate.z)
             end
         end
@@ -2522,9 +2577,9 @@ function DoFate()
             end
         elseif not CurrentFate.isBossFate then
             if not (PathfindInProgress() or PathIsRunning()) then
-                yield("/wait 5")
+                yield("/wait 5.004")
                 local x,y,z = GetTargetRawXPos(), GetTargetRawYPos(), GetTargetRawZPos()
-                if x ~= 0 and z~=0 then
+                if (x ~= 0 and z~=0)  and not GetCharacterCondition(CharacterCondition.casting) then
                     PathfindAndMoveTo(x,y,z, GetCharacterCondition(CharacterCondition.flying) and SelectedZone.flying)
                 end
             end
@@ -2588,14 +2643,14 @@ function Ready()
     elseif not LogInfo("[FATE] Ready -> Repair") and RepairAmount > 0 and NeedsRepair(RepairAmount) and
         (not shouldWaitForBonusBuff or (SelfRepair and GetItemCount(33916) > 0)) then
         State = CharacterState.repair
-        LogInfo("[FATE] State Change: Repair")
+        LogInfo("[FATE] 状态变更: Repair")
     elseif not LogInfo("[FATE] Ready -> ExtractMateria") and ShouldExtractMateria and CanExtractMateria(100) and GetInventoryFreeSlotCount() > 1 then
         State = CharacterState.extractMateria
-        LogInfo("[FATE] State Change: ExtractMateria")
-    elseif not LogInfo("[FATE] Ready -> WaitBonusBuff") and NextFate == nil and shouldWaitForBonusBuff then
+        LogInfo("[FATE] 状态变更: ExtractMateria")
+    elseif (not LogInfo("[FATE] Ready -> WaitBonusBuff") and NextFate == nil and shouldWaitForBonusBuff) and DownTimeWaitAtNearestAetheryte then
         if not HasTarget() or GetTargetName() ~= "以太之光" or GetDistanceToTarget() > 20 then
             State = CharacterState.flyBackToAetheryte
-            LogInfo("[FATE] State Change: FlyBackToAetheryte")
+            LogInfo("[FATE] 状态变更: FlyBackToAetheryte")
         else
             yield("/wait 10")
         end
@@ -2604,17 +2659,17 @@ function Ready()
         ShouldExchangeBicolorGemstones and (BicolorGemCount >= 1400) and not shouldWaitForBonusBuff
     then
         State = CharacterState.exchangingVouchers
-        LogInfo("[FATE] State Change: ExchangingVouchers")
+        LogInfo("[FATE] 状态变更: ExchangingVouchers")
     elseif not LogInfo("[FATE] Ready -> ProcessRetainers") and WaitingForFateRewards == 0 and
         Retainers and ARRetainersWaitingToBeProcessed() and GetInventoryFreeSlotCount() > 1  and not shouldWaitForBonusBuff
     then
         State = CharacterState.processRetainers
-        LogInfo("[FATE] State Change: ProcessingRetainers")
+        LogInfo("[FATE] 状态变更: ProcessingRetainers")
     elseif not LogInfo("[FATE] Ready -> GC TurnIn") and ShouldGrandCompanyTurnIn and
         GetInventoryFreeSlotCount() < InventorySlotsLeft and not shouldWaitForBonusBuff
     then
         State = CharacterState.gcTurnIn
-        LogInfo("[FATE] State Change: GCTurnIn")
+        LogInfo("[FATE] 状态变更: GCTurnIn")
     elseif not LogInfo("[FATE] Ready -> TeleportBackToFarmingZone") and not IsInZone(SelectedZone.zoneId) then
         TeleportTo(SelectedZone.aetheryteList[1].aetheryteName)
         return
@@ -2624,7 +2679,7 @@ function Ready()
     elseif not LogInfo("[FATE] Ready -> NextFate nil") and NextFate == nil then
         if EnableChangeInstance and GetZoneInstance() > 0 and not shouldWaitForBonusBuff then
             State = CharacterState.changingInstances
-            LogInfo("[FATE] State Change: ChangingInstances")
+            LogInfo("[FATE] 状态变更: ChangingInstances")
             return
         elseif CompanionScriptMode and not shouldWaitForBonusBuff then
             if WaitingForFateRewards == 0 then
@@ -2633,9 +2688,9 @@ function Ready()
             else
                 LogInfo("[FATE] Waiting for fate rewards")
             end
-        elseif not HasTarget() or GetTargetName() ~= "以太之光" or GetDistanceToTarget() > 20 then
+        elseif (not HasTarget() or GetTargetName() ~= "以太之光" or GetDistanceToTarget() > 20) and DownTimeWaitAtNearestAetheryte then
             State = CharacterState.flyBackToAetheryte
-            LogInfo("[FATE] State Change: FlyBackToAetheryte")
+            LogInfo("[FATE] 状态变更: FlyBackToAetheryte")
         else
             yield("/wait 10")
         end
@@ -2651,15 +2706,15 @@ function Ready()
         CurrentFate = NextFate
         SetMapFlag(SelectedZone.zoneId, CurrentFate.x, CurrentFate.y, CurrentFate.z)
         State = CharacterState.moveToFate
-        LogInfo("[FATE] State Change: MovingtoFate "..CurrentFate.fateName)
+        LogInfo("[FATE] 状态变更: MovingtoFate "..CurrentFate.fateName)
     end
 
     if not GemAnnouncementLock and (Echo == "All" or Echo == "Gems") then
         GemAnnouncementLock = true
         if BicolorGemCount >= 1400 then
-            yield("/echo [FATE] You're almost capped with "..tostring(BicolorGemCount).."/1500 gems! <se.3>")
+            yield("/echo [FATE] 你已经有了 "..tostring(BicolorGemCount).."/1500 gems! <se.3>")
         else
-            yield("/echo [FATE] Gems: "..tostring(BicolorGemCount).."/1500")
+            yield("/echo [FATE] 双色宝石: "..tostring(BicolorGemCount).."/1500")
         end
     end
 end
@@ -2680,7 +2735,7 @@ function HandleDeath()
         if Echo and not DeathAnnouncementLock then
             DeathAnnouncementLock = true
             if Echo == "All" then
-                yield("/echo [FATE] You have died. Returning to home aetheryte.")
+                yield("/echo [FATE] 你死了，回到返回点的以太之光吧")
             end
         end
 
@@ -2690,7 +2745,7 @@ function HandleDeath()
         end
     else
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
         DeathAnnouncementLock = false
     end
 end
@@ -2757,7 +2812,7 @@ function ExecuteBicolorExchange()
         end
 
         State = CharacterState.ready
-        LogInfo("[FATE] State Change: Ready")
+        LogInfo("[FATE] 状态变更: Ready")
         return
     end
 end
@@ -2808,7 +2863,7 @@ function ProcessRetainers()
             yield("/callback RetainerList true -1")
         elseif not GetCharacterCondition(CharacterCondition.occupiedSummoningBell) then
             State = CharacterState.ready
-            LogInfo("[FATE] State Change: Ready")
+            LogInfo("[FATE] 状态变更: Ready")
         end
     end
 end
@@ -2872,7 +2927,7 @@ function Repair()
 
             if GetCharacterCondition(CharacterCondition.mounted) then
                 Dismount()
-                LogInfo("[FATE] State Change: Dismounting")
+                LogInfo("[FATE] 状态变更: Dismounting")
                 return
             end
 
@@ -2883,12 +2938,12 @@ function Repair()
                 end
             else
                 State = CharacterState.ready
-                LogInfo("[FATE] State Change: Ready")
+                LogInfo("[FATE] 状态变更: Ready")
             end
         elseif ShouldAutoBuyDarkMatter then
             if not IsInZone(129) then
                 if Echo == "All" then
-                    yield("/echo Out of Dark Matter! Purchasing more from Limsa Lominsa.")
+                    yield("/echo 没有暗物质了！ 去下层甲板买点吧")
                 end
                 TeleportTo("利姆萨·罗敏萨下层甲板")
                 return
@@ -2947,7 +3002,7 @@ function Repair()
             end
         else
             State = CharacterState.ready
-            LogInfo("[FATE] State Change: Ready")
+            LogInfo("[FATE] 状态变更: Ready")
         end
     end
 end
@@ -2955,7 +3010,7 @@ end
 function ExtractMateria()
     if GetCharacterCondition(CharacterCondition.mounted) then
         Dismount()
-        LogInfo("[FATE] State Change: Dismounting")
+        LogInfo("[FATE] 状态变更: Dismounting")
         return
     end
 
@@ -2981,7 +3036,7 @@ function ExtractMateria()
             yield("/callback Materialize true -1")
         else
             State = CharacterState.ready
-            LogInfo("[FATE] State Change: Ready")
+            LogInfo("[FATE] 状态变更: Ready")
         end
     end
 end
@@ -3059,7 +3114,7 @@ for _, shop in ipairs(BicolorExchangeData) do
     end
 end
 if SelectedBicolorExchangeData == nil then
-    yield("/echo [FATE] Cannot recognize bicolor shop item "..ItemToPurchase.."! Please make sure it's in the BicolorExchangeData table!")
+    yield("/echo [FATE] 无法识别双色商店商品 "..ItemToPurchase.."! Please make sure it's in the BicolorExchangeData table!")
     StopScript = true
 end
 
@@ -3074,37 +3129,42 @@ if ShouldSummonChocobo and GetBuddyTimeRemaining() > 0 then
 end
 
 while not StopScript do
-    if NavIsReady() then
-        if State ~= CharacterState.dead and GetCharacterCondition(CharacterCondition.dead) then
-            State = CharacterState.dead
-            LogInfo("[FATE] State Change: Dead")
-        elseif State ~= CharacterState.unexpectedCombat and State ~= CharacterState.doFate and
-            State ~= CharacterState.waitForContinuation and State ~= CharacterState.collectionsFateTurnIn and
-            (not IsInFate() or (IsInFate() and IsCollectionsFate(GetFateName(GetNearestFate())) and GetFateProgress(GetNearestFate()) == 100)) and
-            GetCharacterCondition(CharacterCondition.inCombat)
-        then
-            State = CharacterState.unexpectedCombat
-            LogInfo("[FATE] State Change: UnexpectedCombat")
-        end
-        
-        BicolorGemCount = GetItemCount(26807)
+    if not NavIsReady() then
+        yield("/echo [FATE] Waiting for vnavmesh to build...")
+        LogInfo("[FATE] Waiting for vnavmesh to build...")
+        repeat
+            yield("/wait 1")
+        until NavIsReady()
+    end
+    if State ~= CharacterState.dead and GetCharacterCondition(CharacterCondition.dead) then
+        State = CharacterState.dead
+        LogInfo("[FATE] 状态变更:Dead")
+    elseif State ~= CharacterState.unexpectedCombat and State ~= CharacterState.doFate and
+        State ~= CharacterState.waitForContinuation and State ~= CharacterState.collectionsFateTurnIn and
+        (not IsInFate() or (IsInFate() and IsCollectionsFate(GetFateName(GetNearestFate())) and GetFateProgress(GetNearestFate()) == 100)) and
+        GetCharacterCondition(CharacterCondition.inCombat)
+    then
+        State = CharacterState.unexpectedCombat
+        LogInfo("[FATE] 状态变更:UnexpectedCombat")
+    end
+    
+    BicolorGemCount = GetItemCount(26807)
 
-        if not (IsPlayerCasting() or
-            GetCharacterCondition(CharacterCondition.betweenAreas) or
-            GetCharacterCondition(CharacterCondition.jumping48) or
-            GetCharacterCondition(CharacterCondition.jumping61) or
-            GetCharacterCondition(CharacterCondition.mounting57) or
-            GetCharacterCondition(CharacterCondition.mounting64) or
-            GetCharacterCondition(CharacterCondition.beingMoved) or
-            GetCharacterCondition(CharacterCondition.occupiedMateriaExtractionAndRepair) or
-            LifestreamIsBusy())
-        then
-            if WaitingForFateRewards ~= 0 and not IsFateActive(WaitingForFateRewards) then
-                WaitingForFateRewards = 0
-                LogInfo("[FATE] WaitingForFateRewards: "..tostring(WaitingForFateRewards))
-            end
-            State()
+    if not (IsPlayerCasting() or
+        GetCharacterCondition(CharacterCondition.betweenAreas) or
+        GetCharacterCondition(CharacterCondition.jumping48) or
+        GetCharacterCondition(CharacterCondition.jumping61) or
+        GetCharacterCondition(CharacterCondition.mounting57) or
+        GetCharacterCondition(CharacterCondition.mounting64) or
+        GetCharacterCondition(CharacterCondition.beingMoved) or
+        GetCharacterCondition(CharacterCondition.occupiedMateriaExtractionAndRepair) or
+        LifestreamIsBusy())
+    then
+        if WaitingForFateRewards ~= 0 and not IsFateActive(WaitingForFateRewards) then
+            WaitingForFateRewards = 0
+            LogInfo("[FATE] WaitingForFateRewards: "..tostring(WaitingForFateRewards))
         end
+        State()
     end
     yield("/wait 0.1")
 end
