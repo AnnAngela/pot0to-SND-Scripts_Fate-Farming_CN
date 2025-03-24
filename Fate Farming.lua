@@ -6,9 +6,10 @@
 ********************************************************************************
 
 Created by: pot0to (https://ko-fi.com/pot0to)
+Contributors: Prawellp, Mavi, Allison
 State Machine Diagram: https://github.com/pot0to/pot0to-SND-Scripts/blob/main/FateFarmingStateMachine.drawio.png
 
-    -> 2.21.10  Fix call to vbmai preset
+    -> 2.21.10  修正对 vbmai 预设的调用
     -> 2.21.9   By Allison
                 添加了一项优先检查距离FATE的功能，考虑到传送后实际距离可能更短。
                 新增了FatePriority设置。默认行为与之前相同，但会增加上面的新检查，
@@ -129,7 +130,7 @@ RotationPlugin                      = "None"        -- 自动输出插件（None
     RSRAoeType                      = "Full"        -- 可选项: Cleave/Full/Off
                                                         -- 仅 Rotation Solver Reborn (RSR)
 
-    -- 支持 BMR/VBM/Wrath
+    -- 仅 Boss Mod (VBM) / Boss Mod Reborn (BMR)
     RotationSingleTargetPreset      = ""            -- 单体输出模式的预设的名称（用于迷失者、迷失少女）
     RotationAoePreset               = ""            -- AOE 模式的预设的名称
     RotationHoldBuffPreset          = ""            -- 留爆发模式的预设的名称
@@ -1389,7 +1390,7 @@ function SelectNextFateHelper(tempFate, nextFate)
         end
     end
 
-    -- Fallback: Select fate with the lower ID
+    -- 备用方案：选择ID较低的FATE
     LogInfo("[FATE] Selecting lower ID fate: "..tempFate.fateId.." vs "..nextFate.fateId)
     return (tempFate.fateId < nextFate.fateId) and tempFate or nextFate
 end
@@ -1434,7 +1435,7 @@ function BuildFateTable(fateId)
     return fateTable
 end
 
---Gets the Location of the next Fate. Prioritizes anything with progress above 0, then by shortest time left
+--获取下一个Fate的位置。优先选择进度大于0的Fate，其次选择剩余时间最短的Fate
 function SelectNextFate()
     local fates = GetActiveFates()
     if fates == nil then
@@ -2255,7 +2256,7 @@ function TurnOnAoes()
         elseif RotationPlugin == "BMR" then
             yield("/bmrai setpresetname "..RotationAoePreset)
         elseif RotationPlugin == "VBM" then
-            yield("/vbmai setpresetname "..RotationAoePreset)
+            yield("/vbm ar toggle "..RotationAoePreset)
         end
         AoesOn = true
     end
@@ -2270,7 +2271,7 @@ function TurnOffAoes()
         elseif RotationPlugin == "BMR" then
             yield("/bmrai setpresetname "..RotationSingleTargetPreset)
         elseif RotationPlugin == "VBM" then
-            yield("/vbmai setpresetname "..RotationSingleTargetPreset)
+            yield("/vbm ar toggle "..RotationSingleTargetPreset)
         end
         AoesOn = false
     end
@@ -2281,7 +2282,7 @@ function TurnOffRaidBuffs()
         if RotationPlugin == "BMR" then
             yield("/bmrai setpresetname "..RotationHoldBuffPreset)
         elseif RotationPlugin == "VBM" then
-            yield("/vbmai setpresetname "..RotationHoldBuffPreset)
+            yield("/vbm ar toggle "..RotationHoldBuffPreset)
         end
     end
 end
@@ -2311,7 +2312,7 @@ function TurnOnCombatMods(rotationMode)
         elseif RotationPlugin == "BMR" then
             yield("/bmrai setpresetname "..RotationAoePreset)
         elseif RotationPlugin == "VBM" then
-            yield("/vbmai setpresetname "..RotationAoePreset)
+            yield("/vbm ar toggle "..RotationAoePreset)
         elseif RotationPlugin == "Wrath" then
             yield("/wrath auto on")
         end
@@ -2364,6 +2365,7 @@ function TurnOffCombatMods()
                 yield("/bmrai followcombat off")
                 yield("/bmrai followoutofcombat off")
             elseif DodgingPlugin == "VBM" then
+                yield("/vbm ar disable")
                 yield("/vbmai off")
                 yield("/vbmai followtarget off")
                 yield("/vbmai followcombat off")
@@ -2853,7 +2855,7 @@ function ProcessRetainers()
             if IsAddonVisible("RetainerList") then
                 yield("/ays e")
                 if Echo == "All" then
-                    yield("/echo [FATE] Processing retainers")
+                    yield("/echo [FATE] 正在处理雇员")
                 end
                 yield("/wait 1")
             end
@@ -2972,7 +2974,7 @@ function Repair()
             end
         else
             if Echo == "All" then
-                yield("/echo Out of Dark Matter and ShouldAutoBuyDarkMatter is false. Switching to Limsa mender.")
+                yield("/echo 暗物质不足且自动购买暗物质设置为禁用。切换到利姆萨修理工模式。")
             end
             SelfRepair = false
         end
@@ -3095,7 +3097,7 @@ SetMaxDistance()
 
 SelectedZone = SelectNextZone()
 if SelectedZone.zoneName ~= "" and Echo == "All" then
-    yield("/echo [FATE] Farming "..SelectedZone.zoneName)
+    yield("/echo [FATE] 正在执行区域: " .. SelectedZone.zoneName)
 end
 LogInfo("[FATE] Farming Start for "..SelectedZone.zoneName)
 
@@ -3114,7 +3116,7 @@ for _, shop in ipairs(BicolorExchangeData) do
     end
 end
 if SelectedBicolorExchangeData == nil then
-    yield("/echo [FATE] 无法识别双色商店商品 "..ItemToPurchase.."! Please make sure it's in the BicolorExchangeData table!")
+    yield("/echo [FATE] 无法识别双色商店商品 "..ItemToPurchase.."！请确保它在 BicolorExchangeData 表中！")
     StopScript = true
 end
 
@@ -3130,7 +3132,7 @@ end
 
 while not StopScript do
     if not NavIsReady() then
-        yield("/echo [FATE] Waiting for vnavmesh to build...")
+        yield("/echo [FATE] 正在等待 vnavmesh 构建...")
         LogInfo("[FATE] Waiting for vnavmesh to build...")
         repeat
             yield("/wait 1")
